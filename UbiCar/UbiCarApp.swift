@@ -11,7 +11,7 @@ import SwiftUI
 struct UbiCarApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LaunchView()
         }
     }
 }

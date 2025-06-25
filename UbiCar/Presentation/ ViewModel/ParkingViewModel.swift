@@ -11,11 +11,12 @@ class ParkingViewModel: ObservableObject {
         loadParkingLocation()
     }
     
-    func saveParkingLocation(coordinate: CLLocationCoordinate2D) {
+    func saveParkingLocation(coordinate: CLLocationCoordinate2D, placeName: String?) {
         let parking = ParkingLocation(
             latitude: coordinate.latitude,
             longitude: coordinate.longitude,
-            date: Date()
+            date: Date(),
+            placeName: placeName
         )
         if let data = try? JSONEncoder().encode(parking) {
             UserDefaults.standard.set(data, forKey: parkingKey)
