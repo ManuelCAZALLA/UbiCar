@@ -11,16 +11,21 @@ struct LaunchView: View {
                 ContentView()
             } else {
                 VStack(spacing: 32) {
-                    Image("UbiCar")
+                    Image("UbiCar") 
                         .resizable()
                         .scaledToFit()
                         .frame(width: 180, height: 180)
                     Text("Bienvenido a UbiCar")
                         .font(.largeTitle)
                         .bold()
-                    AllowLocationButton {
+                    Button("Permitir ubicación") {
                         locationManager.requestAuthorization()
                     }
+                    .font(.title2)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
                 }
                 .onAppear {
                     checkAuthorization()
@@ -34,7 +39,7 @@ struct LaunchView: View {
     }
 
     private func checkAuthorization() {
-        let status = CLLocationManager.authorizationStatus()
+        let status = locationManager.authorizationStatus
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             isAuthorized = true
         }

@@ -74,26 +74,21 @@ struct ContentView: View {
                 }
                 MapGuideButton {
                     showMap = true
-                    if let userLocation = userLocation {
-                        let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-                            .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
-                        let texto = "Tu coche está a \(Int(distance)) metros."
-                        VoiceGuideService.shared.speak(texto)
-                    }
                 }
                 .sheet(isPresented: $showMap) {
                     MapView(parkingLocation: last)
-                }
-                CompassButton {
-                    showCompass = true
-                }
-                .sheet(isPresented: $showCompass) {
-                    CompassView(target: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude))
+                        .onAppear {
+                            if let userLocation = locationManager.userLocation {
+                                let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+                                    .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
+                                let texto = "Tu coche está a \(Int(distance)) metros."
+                                VoiceGuideService.shared.speak(texto)
+                            }
+                        }
                 }
             }
         }
         .padding()
-        
         .onAppear {
             if let location = locationManager.userLocation {
                 LocationManager.shared.getPlaceName(for: location) { name in
@@ -103,5 +98,18 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: locationManager.userLocation) { oldValue, newValue in
+            if let location = newValue {
+                LocationManager.shared.getPlaceName(for: location) { name in
+                    DispatchQueue.main.async {
+                        self.placeName = name
+                    }
+                }
+            }
+        }
     }
+}
+
+#Preview {
+    ContentView()
 }

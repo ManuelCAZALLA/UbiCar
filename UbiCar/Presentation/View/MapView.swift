@@ -1,10 +1,12 @@
 import SwiftUI
 import MapKit
+import AVFoundation
 
 struct MapView: View {
     let parkingLocation: ParkingLocation
     @State private var cameraPosition: MapCameraPosition
     @State private var route: MKRoute?
+    private let speechSynthesizer = AVSpeechSynthesizer()
 
     init(parkingLocation: ParkingLocation) {
         self.parkingLocation = parkingLocation
@@ -18,7 +20,6 @@ struct MapView: View {
 
     var body: some View {
         Map(position: $cameraPosition) {
-            // Anotación personalizada
             Annotation("Coche", coordinate: CLLocationCoordinate2D(latitude: parkingLocation.latitude, longitude: parkingLocation.longitude)) {
                 Image(systemName: "car.fill")
                     .font(.title)
@@ -58,7 +59,19 @@ struct MapView: View {
         directions.calculate { response, error in
             if let route = response?.routes.first {
                 self.route = route
+                speakDistance(route.distance)
+            } else if let error = error {
+                print("Error al calcular la ruta: \(error.localizedDescription)")
             }
         }
     }
-} 
+
+    private func speakDistance(_ distance: CLLocationDistance) {
+        let meters = Int(distance)
+        let utterance = AVSpeechUtterance(string: "Tu coche está a \(meters) metros.")
+        utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
+        speechSynthesizer.speak(utterance)
+    }
+}
+
+

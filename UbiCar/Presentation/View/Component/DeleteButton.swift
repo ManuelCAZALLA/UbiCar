@@ -9,3 +9,9 @@ struct DeleteButton: View {
         }
     }
 } 
+
+#Preview {
+    DeleteButton(action: {
+        print("Borrar ubicación")
+    })
+}

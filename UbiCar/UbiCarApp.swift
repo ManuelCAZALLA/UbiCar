@@ -9,6 +9,11 @@ import SwiftUI
 
 @main
 struct UbiCarApp: App {
+    
+    init() {
+            UIView.appearance().overrideUserInterfaceStyle = .light
+        }
+    
     var body: some Scene {
         WindowGroup {
             LaunchView()

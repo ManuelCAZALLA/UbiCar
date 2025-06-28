@@ -1,3 +1,10 @@
+//
+//  ParkingButton.swift
+//  UbiCar
+//
+//  Created by Manuel Cazalla Colmenero on 28/6/25.
+//
+
 import SwiftUI
 
 struct ParkingButton: View {
@@ -16,4 +23,11 @@ struct ParkingButton: View {
         }
         .disabled(!enabled)
     }
-} 
+}
+
+#Preview {
+    ParkingButton(enabled: true) {
+        print("Botón Aparcado aquí pulsado")
+    }
+}
+
