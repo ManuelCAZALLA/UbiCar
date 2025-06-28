@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  UbiCar
-//
-//  Created by Manuel Cazalla Colmenero on 22/6/25.
-//
-
 import SwiftUI
 import CoreLocation
 
@@ -14,27 +7,28 @@ struct ContentView: View {
     @State private var showingAlert = false
     @State private var showMap = false
     @State private var showCompass = false
-    @State private var placeName: String = ""  // Nombre del lugar
+    @State private var placeName: String?
     
     var body: some View {
         VStack(spacing: 32) {
-            Text("UbiCar")
-                .font(.largeTitle)
-                .bold()
+            Image("UbiCar")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 180, height: 180)
             
-            let status = CLLocationManager.authorizationStatus()
+            let status = locationManager.authorizationStatus
             let userLocation = locationManager.userLocation
-
-            if let _ = userLocation {
+            
+            if let location = userLocation {
                 VStack {
                     Text("Tu ubicación actual:")
                         .font(.headline)
-                    if placeName.isEmpty {
-                        Text("Obteniendo dirección…")
+                    if let placeName = placeName {
+                        Text(placeName)
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     } else {
-                        Text(placeName)
+                        Text("Obteniendo nombre del lugar…")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -50,21 +44,12 @@ struct ContentView: View {
                     .foregroundColor(.red)
             }
             
-            Button(action: {
+            ParkingButton(enabled: userLocation != nil) {
                 if let location = userLocation {
-                    viewModel.saveParkingLocation(coordinate: location)
+                    viewModel.saveParkingLocation(coordinate: location, placeName: placeName)
                     showingAlert = true
                 }
-            }) {
-                Text("Aparcado aquí")
-                    .font(.title2)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(userLocation != nil ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
             }
-            .disabled(userLocation == nil)
             .alert("Ubicación guardada", isPresented: $showingAlert) {
                 Button("OK", role: .cancel) { }
             }
@@ -73,47 +58,51 @@ struct ContentView: View {
                 VStack {
                     Text("Último aparcamiento:")
                         .font(.headline)
-                    Text("Lat: \(last.latitude), Lon: \(last.longitude)")
-                        .font(.subheadline)
+                    if let name = last.placeName {
+                        Text(name)
+                            .font(.subheadline)
+                    } else {
+                        Text("Lat: \(last.latitude), Lon: \(last.longitude)")
+                            .font(.subheadline)
+                    }
                     Text("Fecha: \(last.date.formatted(date: .abbreviated, time: .shortened))")
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-                Button("Borrar ubicación") {
+                DeleteButton {
                     viewModel.clearParkingLocation()
                 }
-                .foregroundColor(.red)
-                Button("Ver mapa y guía por voz") {
+                MapGuideButton {
                     showMap = true
-                    if let userLocation = userLocation {
-                        let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-                            .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
-                        let texto = "Tu coche está a \(Int(distance)) metros."
-                        VoiceGuideService.shared.speak(texto)
-                    }
                 }
-                .padding(.top, 8)
                 .sheet(isPresented: $showMap) {
                     MapView(parkingLocation: last)
-                }
-                Button("Brújula / Flecha") {
-                    showCompass = true
-                }
-                .padding(.top, 8)
-                .sheet(isPresented: $showCompass) {
-                    CompassView(target: CLLocationCoordinate2D(latitude: last.latitude, longitude: last.longitude))
+                        .onAppear {
+                            if let userLocation = locationManager.userLocation {
+                                let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+                                    .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
+                                let texto = "Tu coche está a \(Int(distance)) metros."
+                                VoiceGuideService.shared.speak(texto)
+                            }
+                        }
                 }
             }
         }
         .padding()
         .onAppear {
-            locationManager.requestAuthorization()
-            locationManager.start()
-            
             if let location = locationManager.userLocation {
-                locationManager.getPlaceName(for: location) { name in
+                LocationManager.shared.getPlaceName(for: location) { name in
                     DispatchQueue.main.async {
                         placeName = name
+                    }
+                }
+            }
+        }
+        .onChange(of: locationManager.userLocation) { oldValue, newValue in
+            if let location = newValue {
+                LocationManager.shared.getPlaceName(for: location) { name in
+                    DispatchQueue.main.async {
+                        self.placeName = name
                     }
                 }
             }
