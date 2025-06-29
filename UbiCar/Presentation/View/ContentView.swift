@@ -5,111 +5,97 @@ struct ContentView: View {
     @StateObject private var viewModel = ParkingViewModel()
     @StateObject private var locationManager = LocationManager.shared
     @State private var showingAlert = false
-    @State private var showMap = false
-    @State private var showCompass = false
     @State private var placeName: String?
-    
+    @State private var navigateToMap = false
+
     var body: some View {
-        VStack(spacing: 32) {
-            Image("UbiCar")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 180, height: 180)
-            
-            let status = locationManager.authorizationStatus
-            let userLocation = locationManager.userLocation
-            
-            if let location = userLocation {
-                VStack {
-                    Text("Tu ubicación actual:")
-                        .font(.headline)
-                    if let placeName = placeName {
-                        Text(placeName)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    } else {
-                        Text("Obteniendo nombre del lugar…")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 30) {
+                    VStack(spacing: 8) {
+                        Image("UbiCar")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                            .shadow(radius: 10)
+                        
+                        Text("find_car_easily".localized)
+                            .font(.largeTitle.weight(.semibold))
+                            .foregroundColor(.blue)
                     }
-                }
-            } else if status == .authorizedWhenInUse || status == .authorizedAlways {
-                Text("Obteniendo ubicación…")
-                    .foregroundColor(.gray)
-            } else if status == .notDetermined {
-                Text("Esperando permiso de localización…")
-                    .foregroundColor(.gray)
-            } else {
-                Text("Ubicación no disponible")
-                    .foregroundColor(.red)
-            }
-            
-            ParkingButton(enabled: userLocation != nil) {
-                if let location = userLocation {
-                    viewModel.saveParkingLocation(coordinate: location, placeName: placeName)
-                    showingAlert = true
-                }
-            }
-            .alert("Ubicación guardada", isPresented: $showingAlert) {
-                Button("OK", role: .cancel) { }
-            }
-            
-            if let last = viewModel.lastParking {
-                VStack {
-                    Text("Último aparcamiento:")
-                        .font(.headline)
-                    if let name = last.placeName {
-                        Text(name)
-                            .font(.subheadline)
-                    } else {
-                        Text("Lat: \(last.latitude), Lon: \(last.longitude)")
-                            .font(.subheadline)
-                    }
-                    Text("Fecha: \(last.date.formatted(date: .abbreviated, time: .shortened))")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                DeleteButton {
-                    viewModel.clearParkingLocation()
-                }
-                MapGuideButton {
-                    showMap = true
-                }
-                .sheet(isPresented: $showMap) {
-                    MapView(parkingLocation: last)
-                        .onAppear {
-                            if let userLocation = locationManager.userLocation {
-                                let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-                                    .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
-                                let texto = "Tu coche está a \(Int(distance)) metros."
-                                VoiceGuideService.shared.speak(texto)
+                    .padding(.top, 20)
+                    
+                    Group {
+                        if let userLocation = locationManager.userLocation {
+                            VStack(spacing: 4) {
+                                Label("current_location".localized, systemImage: "location.fill")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                
+                                if let placeName = placeName {
+                                    Text(placeName)
+                                        .font(.title3)
+                                        .foregroundColor(.primary)
+                                } else {
+                                    ProgressView("getting_place_name".localized)
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                                }
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(15)
+                            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            .padding(.horizontal)
+                        } else {
+                            LocationStatusView(status: locationManager.authorizationStatus)
+                                .padding(.horizontal)
                         }
+                    }
+                    
+                    ParkingButton(enabled: locationManager.userLocation != nil) {
+                        if let location = locationManager.userLocation {
+                            viewModel.saveParkingLocation(coordinate: location, placeName: placeName)
+                            showingAlert = true
+                        }
+                    }
+                    .padding(.horizontal)
+                    .alert("location_saved".localized, isPresented: $showingAlert) {
+                        Button("ok".localized, role: .cancel) {}
+                    }
+                    
+                    if let last = viewModel.lastParking {
+                        ParkingInfoCard(parking: last, onDelete: {
+                            viewModel.clearParkingLocation()
+                        }, onNavigate: {
+                            speakDistance(to: last)
+                            navigateToMap = true
+                        })
+                        .padding(.horizontal)
+                        
+                        NavigationLink(
+                            destination: MapView(parkingLocation: last),
+                            isActive: $navigateToMap
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
+                    }
                 }
+                .padding(.bottom, 40)
             }
+            .navigationTitle("app_name".localized)
         }
-        .padding()
         .onAppear {
-            if let location = locationManager.userLocation {
-                LocationManager.shared.getPlaceName(for: location) { name in
-                    DispatchQueue.main.async {
-                        placeName = name
-                    }
-                }
-            }
+            updatePlaceName()
         }
-        .onChange(of: locationManager.userLocation) { oldValue, newValue in
-            if let location = newValue {
-                LocationManager.shared.getPlaceName(for: location) { name in
-                    DispatchQueue.main.async {
-                        self.placeName = name
-                    }
-                }
-            }
+        .onChange(of: locationManager.userLocation) { _ in
+            updatePlaceName()
         }
     }
 }
 
 #Preview {
     ContentView()
+    
 }

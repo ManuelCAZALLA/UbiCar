@@ -1,25 +1,23 @@
 import SwiftUI
-import CoreLocation
 
 struct LaunchView: View {
-    @StateObject private var locationManager = LocationManager.shared
-    @State private var isAuthorized = false
-
+    @StateObject private var viewModel = LaunchViewModel()
+    
     var body: some View {
         Group {
-            if isAuthorized {
+            if viewModel.isAuthorized {
                 ContentView()
             } else {
                 VStack(spacing: 32) {
-                    Image("UbiCar") 
+                    Image("UbiCar")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 180, height: 180)
-                    Text("Bienvenido a UbiCar")
+                    Text("welcome_to_ubicar".localized)
                         .font(.largeTitle)
                         .bold()
-                    Button("Permitir ubicación") {
-                        locationManager.requestAuthorization()
+                    Button("allow_location".localized) {
+                        viewModel.requestAuthorization()
                     }
                     .font(.title2)
                     .padding()
@@ -27,21 +25,12 @@ struct LaunchView: View {
                     .foregroundColor(.white)
                     .cornerRadius(12)
                 }
-                .onAppear {
-                    checkAuthorization()
-                }
-                .onReceive(locationManager.$authorizationStatus) { _ in
-                    checkAuthorization()
-                }
             }
         }
-        .animation(.easeInOut, value: isAuthorized)
+        .animation(.easeInOut, value: viewModel.isAuthorized)
     }
+}
 
-    private func checkAuthorization() {
-        let status = locationManager.authorizationStatus
-        if status == .authorizedWhenInUse || status == .authorizedAlways {
-            isAuthorized = true
-        }
-    }
-} 
+#Preview {
+  LaunchView()
+}
