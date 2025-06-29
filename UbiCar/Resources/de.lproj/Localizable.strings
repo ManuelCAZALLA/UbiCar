@@ -1,0 +1,36 @@
+/* 
+  Localizable.strings
+  UbiCar
+  
+  Created by Manuel Cazalla Colmenero on 22/6/25.
+*/
+
+// MARK: - App General
+"app_name" = "UbiCar";
+"welcome_to_ubicar" = "Willkommen bei UbiCar";
+"find_car_easily" = "Finden Sie Ihr Auto einfach";
+
+// MARK: - Location
+"allow_location" = "Standort erlauben";
+"current_location" = "Ihr aktueller Standort:";
+"location_saved" = "Standort gespeichert";
+"location_not_available" = "Standort nicht verfügbar";
+"waiting_location_permission" = "Warten auf Standortberechtigung…";
+"getting_location" = "Standort wird abgerufen…";
+"getting_place_name" = "Ortsname wird abgerufen…";
+"unknown_status" = "Unbekannter Status";
+
+// MARK: - Parking
+"last_parking" = "Letztes Parken";
+"delete" = "Löschen";
+"back_to_car" = "Zurück zum Auto";
+"date" = "Datum";
+
+// MARK: - Voice Guide
+"car_distance_message" = "Ihr Auto ist %d Meter entfernt.";
+
+// MARK: - Buttons
+"ok" = "OK";
+
+// MARK: - Coordinates
+"coordinates_format" = "Lat: %f, Lon: %f"; 
