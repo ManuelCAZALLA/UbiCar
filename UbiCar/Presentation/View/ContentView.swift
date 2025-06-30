@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreLocation
 
+
 struct ContentView: View {
     
     @StateObject private var viewModel = ParkingViewModel()
@@ -8,6 +9,7 @@ struct ContentView: View {
     @State private var showingAlert = false
     @State private var showMap = false
     @State private var lastGeocodeDate: Date?
+    @State private var parkingNote: String = ""
     
     var body: some View {
         NavigationView {
@@ -15,19 +17,18 @@ struct ContentView: View {
                 VStack(spacing: 30) {
                     headerSection
                     locationSection
+                    noteInputSection
                     parkingButtonSection
                     lastParkingSection
                 }
                 .padding(.bottom, 40)
             }
-            .navigationTitle("app_name".localized)
+           
         }
         .onAppear { viewModel.updatePlaceName() }
-        
         .onChange(of: locationManager.userLocation) {
             viewModel.updatePlaceName()
         }
-        
     }
 
     private var headerSection: some View {
@@ -73,10 +74,21 @@ struct ContentView: View {
         }
     }
 
+    private var noteInputSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Nota para el aparcamiento (opcional):")
+                .font(.subheadline)
+            TextField("Escribe una nota...", text: $parkingNote)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        }
+        .padding(.horizontal)
+    }
+
     private var parkingButtonSection: some View {
         ParkingButton(enabled: locationManager.userLocation != nil) {
             if let _ = locationManager.userLocation {
-                viewModel.saveParkingLocation()
+                viewModel.saveParkingLocation(note: parkingNote.isEmpty ? nil : parkingNote)
+                parkingNote = ""
                 showingAlert = true
             }
         }
@@ -94,7 +106,7 @@ struct ContentView: View {
                 }, onNavigate: {
                     showMap = true
                     viewModel.speakDistance(to: last)
-                })
+                }, note: last.note)
                 .padding(.horizontal)
                 .sheet(isPresented: $showMap) {
                     MapView(parkingLocation: last)

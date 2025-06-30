@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LaunchView: View {
-    @StateObject private var viewModel = LaunchViewModel()
+    @ObservedObject var viewModel: LaunchViewModel
     
     var body: some View {
         Group {
@@ -32,5 +32,5 @@ struct LaunchView: View {
 }
 
 #Preview {
-  LaunchView()
+  LaunchView(viewModel: LaunchViewModel())
 }

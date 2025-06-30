@@ -4,6 +4,7 @@ struct ParkingInfoCard: View {
     let parking: ParkingLocation
     let onDelete: () -> Void
     let onNavigate: () -> Void
+    let note: String?
     
     var body: some View {
         VStack(spacing: 14) {
@@ -26,6 +27,13 @@ struct ParkingInfoCard: View {
                     Text("\("date".localized): \(parking.date.formatted(date: .abbreviated, time: .shortened))")
                         .font(.caption)
                         .foregroundColor(.gray)
+                    if let note = note, !note.isEmpty {
+                        Divider()
+                        Text("Nota: \(note)")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .padding(.top, 4)
+                    }
                 }
                 Spacer()
             }
