@@ -16,7 +16,7 @@ struct UbiCarApp: App {
     
     var body: some Scene {
         WindowGroup {
-            LaunchView()
+            RootView()
         }
     }
 }

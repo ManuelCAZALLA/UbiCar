@@ -30,13 +30,14 @@ final class ParkingViewModel: NSObject, ObservableObject {
         locationManager.requestWhenInUseAuthorization()
     }
     
-    func saveParkingLocation() {
+    func saveParkingLocation(note: String? = nil) {
         guard let coordinate = userLocation else { return }
         let parking = ParkingLocation(
             latitude: coordinate.latitude,
             longitude: coordinate.longitude,
             date: Date(),
-            placeName: placeName
+            placeName: placeName,
+            note: note
         )
         if let data = try? JSONEncoder().encode(parking) {
             UserDefaults.standard.set(data, forKey: parkingKey)
