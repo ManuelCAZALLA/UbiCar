@@ -1,16 +1,10 @@
-//
-//  ParkingInfoCardView.swift
-//  UbiCar
-//
-//  Created by Manuel Cazalla Colmenero on 29/6/25.
-//
-
 import SwiftUI
 
 struct ParkingInfoCard: View {
     let parking: ParkingLocation
     let onDelete: () -> Void
     let onNavigate: () -> Void
+    let note: String?
     
     var body: some View {
         VStack(spacing: 14) {
@@ -33,6 +27,13 @@ struct ParkingInfoCard: View {
                     Text("\("date".localized): \(parking.date.formatted(date: .abbreviated, time: .shortened))")
                         .font(.caption)
                         .foregroundColor(.gray)
+                    if let note = note, !note.isEmpty {
+                        Divider()
+                        Text("Nota: \(note)")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                            .padding(.top, 4)
+                    }
                 }
                 Spacer()
             }
@@ -62,5 +63,4 @@ struct ParkingInfoCard: View {
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
-}
-
+} 

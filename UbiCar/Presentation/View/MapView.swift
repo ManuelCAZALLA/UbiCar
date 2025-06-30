@@ -6,6 +6,7 @@ struct MapView: View {
     @State private var cameraPosition: MapCameraPosition
     
     init(parkingLocation: ParkingLocation) {
+        
         let coord = CLLocationCoordinate2D(latitude: parkingLocation.latitude, longitude: parkingLocation.longitude)
         _viewModel = StateObject(wrappedValue: MapViewModel(parkingLocation: coord))
         _cameraPosition = State(initialValue: .region(
