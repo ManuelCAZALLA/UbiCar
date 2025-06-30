@@ -13,6 +13,7 @@ final class ParkingViewModel: NSObject, ObservableObject {
     private let parkingKey = "lastParkingLocation"
     private let locationManager = CLLocationManager()
     private let speechSynthesizer = AVSpeechSynthesizer()
+    private var lastGeocodeDate: Date? = nil
     
     override init() {
         super.init()
@@ -58,6 +59,11 @@ final class ParkingViewModel: NSObject, ObservableObject {
     
     // MARK: - Nueva función para actualizar el nombre del lugar
     func updatePlaceName() {
+        let now = Date()
+        if let last = lastGeocodeDate, now.timeIntervalSince(last) < 10 {
+            return
+        }
+        lastGeocodeDate = now
         guard let location = userLocation else { return }
         let loc = CLLocation(latitude: location.latitude, longitude: location.longitude)
         CLGeocoder().reverseGeocodeLocation(loc) { [weak self] placemarks, error in

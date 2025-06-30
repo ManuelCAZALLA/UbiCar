@@ -1,10 +1,3 @@
-//
-//  ParkingInfoCardView.swift
-//  UbiCar
-//
-//  Created by Manuel Cazalla Colmenero on 29/6/25.
-//
-
 import SwiftUI
 
 struct ParkingInfoCard: View {
@@ -62,5 +55,4 @@ struct ParkingInfoCard: View {
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
-}
-
+} 

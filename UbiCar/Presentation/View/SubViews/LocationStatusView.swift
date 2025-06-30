@@ -1,10 +1,3 @@
-//
-//  LocationStatusView.swift
-//  UbiCar
-//
-//  Created by Manuel Cazalla Colmenero on 29/6/25.
-//
-
 import SwiftUI
 import CoreLocation
 
@@ -34,6 +27,4 @@ struct LocationStatusView: View {
         .cornerRadius(15)
         .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
-}
-
-
+} 
