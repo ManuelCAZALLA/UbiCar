@@ -12,22 +12,25 @@ struct ContentView: View {
     @State private var parkingNote: String = ""
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 30) {
-                    headerSection
-                    locationSection
-                    noteInputSection
-                    parkingButtonSection
-                    lastParkingSection
+        ZStack {
+            Color.background.ignoresSafeArea()
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 30) {
+                        headerSection
+                        locationSection
+                        noteInputSection
+                        parkingButtonSection
+                        lastParkingSection
+                    }
+                    .padding(.bottom, 40)
                 }
-                .padding(.bottom, 40)
+                .background(Color.clear)
             }
-           
-        }
-        .onAppear { viewModel.updatePlaceName() }
-        .onChange(of: locationManager.userLocation) {
-            viewModel.updatePlaceName()
+            .onAppear { viewModel.updatePlaceName() }
+            .onChange(of: locationManager.userLocation) {
+                viewModel.updatePlaceName()
+            }
         }
     }
 
@@ -40,7 +43,7 @@ struct ContentView: View {
                 .shadow(radius: 10)
             Text("find_car_easily".localized)
                 .font(.largeTitle.weight(.semibold))
-                .foregroundColor(.blue)
+                .foregroundColor(.appPrimary)
         }
         .padding(.top, 20)
     }
@@ -51,21 +54,21 @@ struct ContentView: View {
                 VStack(spacing: 4) {
                     Label("current_location".localized, systemImage: "location.fill")
                         .font(.headline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.appSecondary)
                     if let placeName = viewModel.placeName {
                         Text(placeName)
                             .font(.title3)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.appPrimary)
                     } else {
                         ProgressView("getting_place_name".localized)
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                            .progressViewStyle(CircularProgressViewStyle(tint: .appPrimary))
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color.white.opacity(0.9))
                 .cornerRadius(15)
-                .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.appPrimary.opacity(0.08), radius: 8, x: 0, y: 4)
                 .padding(.horizontal)
             } else {
                 LocationStatusView(status: locationManager.authorizationStatus)
@@ -78,6 +81,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Nota para el aparcamiento (opcional):")
                 .font(.subheadline)
+                .foregroundColor(.appPrimary)
             TextField("Escribe una nota...", text: $parkingNote)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
         }
@@ -108,8 +112,8 @@ struct ContentView: View {
                     viewModel.speakDistance(to: last)
                 }, note: last.note)
                 .padding(.horizontal)
-                .sheet(isPresented: $showMap) {
-                    MapView(parkingLocation: last)
+                .fullScreenCover(isPresented: $showMap) {
+                    MapFullScreenView(parkingLocation: last, onClose: { showMap = false })
                 }
             }
         }

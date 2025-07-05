@@ -7,14 +7,20 @@ struct ParkingInfoCard: View {
     let note: String?
     
     var body: some View {
-        VStack(spacing: 14) {
-            HStack {
-                Image(systemName: "car.fill")
-                    .foregroundColor(.blue)
-                    .font(.title2)
+        VStack(spacing: 18) {
+            HStack(alignment: .top, spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(Color.appPrimary.opacity(0.15))
+                        .frame(width: 48, height: 48)
+                    Image(systemName: "car.fill")
+                        .foregroundColor(.appPrimary)
+                        .font(.title2)
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("last_parking".localized)
                         .font(.headline)
+                        .foregroundColor(.appPrimary)
                     if let name = parking.placeName {
                         Text(name)
                             .font(.subheadline)
@@ -41,10 +47,10 @@ struct ParkingInfoCard: View {
             HStack(spacing: 20) {
                 Button(action: onDelete) {
                     Label("delete".localized, systemImage: "trash")
-                        .foregroundColor(.red)
+                        .foregroundColor(.error)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.red.opacity(0.1))
+                        .background(Color.error.opacity(0.12))
                         .cornerRadius(10)
                 }
                 
@@ -53,14 +59,15 @@ struct ParkingInfoCard: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color.appPrimary)
                         .cornerRadius(10)
+                        .shadow(radius: 2)
                 }
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .background(Color.white)
+        .cornerRadius(22)
+        .shadow(color: Color.appPrimary.opacity(0.10), radius: 12, x: 0, y: 6)
     }
 } 
