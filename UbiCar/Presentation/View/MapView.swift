@@ -56,21 +56,7 @@ struct MapView: View {
             .onAppear {
                 viewModel.calculateRoute()
             }
-            .overlay(
-                VStack {
-                    if let route = viewModel.route {
-                        Text("Distancia: \(Int(route.distance)) m")
-                            .padding(10)
-                            .background(Color.white.opacity(0.92))
-                            .foregroundColor(.appPrimary)
-                            .font(.headline)
-                            .cornerRadius(12)
-                            .shadow(color: Color.appPrimary.opacity(0.10), radius: 12, x: 0, y: 6)
-                            .padding()
-                    }
-                    Spacer()
-                }
-            )
+           
         }
     }
 }

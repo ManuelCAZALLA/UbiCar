@@ -8,11 +8,21 @@
 import SwiftUI
 
 struct ParkingMeterView: View {
+    let parking: ParkingLocation?
+    @Binding var openParkingFromNotification: Bool
     @StateObject private var viewModel = ParkingMeterViewModel()
     @State private var selectedMinutes: Int = 15
     @State private var preEndAlertMinutes: Int = 5
     let minuteOptions = [5, 10, 15, 30, 45, 60]
     let preEndOptions = [1, 3, 5, 10, 15]
+    @State private var showAlert = false
+    @State private var alertType: ParkingAlertType? = nil
+    @State private var showMap = false
+    
+    enum ParkingAlertType {
+        case warning
+        case notification
+    }
 
     var body: some View {
         ZStack {
@@ -96,7 +106,7 @@ struct ParkingMeterView: View {
                                 .bold()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.accentColor)
+                                .background(Color.accent)
                                 .foregroundColor(.white)
                                 .cornerRadius(14)
                                 .shadow(radius: 4)
@@ -110,11 +120,54 @@ struct ParkingMeterView: View {
             .padding(.top, 8)
             .onAppear {
                 viewModel.requestNotificationPermission()
+                if openParkingFromNotification {
+                    alertType = .notification
+                    showAlert = true
+                    openParkingFromNotification = false
+                } else if let remaining = viewModel.remainingTime, (!viewModel.hasActiveTimer && remaining <= 0) || (remaining > 0 && remaining < 60 * 5) {
+                    alertType = .warning
+                    showAlert = true
+                }
+            }
+            .alert(isPresented: $showAlert) {
+                switch alertType {
+                case .notification:
+                    return Alert(
+                        title: Text("alert_attention".localized),
+                        message: Text("alert_parking_expired".localized),
+                        primaryButton: .default(Text("go_to_car".localized), action: {
+                            showMap = true
+                        }),
+                        secondaryButton: .cancel(Text("close".localized))
+                    )
+                case .warning:
+                    return Alert(
+                        title: Text("alert_attention".localized),
+                        message: Text("alert_parking_expired".localized),
+                        primaryButton: .default(Text("go_to_car".localized), action: {
+                            showMap = true
+                        }),
+                        secondaryButton: .cancel(Text("close".localized))
+                    )
+                case .none:
+                    return Alert(title: Text(""))
+                }
+            }
+            .fullScreenCover(isPresented: $showMap) {
+                if let parking = parking {
+                    MapFullScreenView(parkingLocation: parking, onClose: { showMap = false })
+                }
             }
         }
     }
 }
 
-#Preview {
-    ParkingMeterView()
-}
+/*#Preview {
+    ParkingMeterView(parking: ParkingLocation(
+        latitude: 40.4168,  // Madrid
+        longitude: -3.7038,
+        date: Date(),
+        placeName: "Aparcado en la Gran Vía"
+    ), openParkingFromNotification: .&&(lhs: <#T##Bool#>, rhs: <#T##() -> Bool#>)
+    )}
+*/

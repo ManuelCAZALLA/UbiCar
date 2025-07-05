@@ -38,7 +38,6 @@ class MapViewModel: NSObject, ObservableObject {
             if let route = response?.routes.first {
                 DispatchQueue.main.async {
                     self?.route = route
-                    self?.speakDistance(route.distance)
                 }
             } else if let error = error {
                 print("Error calculando ruta: \(error.localizedDescription)")
@@ -52,13 +51,6 @@ class MapViewModel: NSObject, ObservableObject {
         let carLoc = CLLocation(latitude: parkingLocation.latitude, longitude: parkingLocation.longitude)
         let distance = userLoc.distance(from: carLoc)
         return Int(distance)
-    }
-    
-    private func speakDistance(_ distance: CLLocationDistance) {
-        let meters = Int(distance)
-        let utterance = AVSpeechUtterance(string: "Tu coche está a \(meters) metros.")
-        utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
-        speechSynthesizer.speak(utterance)
     }
     
     func announceClosestStepIfNeeded() {
@@ -78,6 +70,9 @@ class MapViewModel: NSObject, ObservableObject {
         if let idx = closestIndex, idx != lastSpokenStepIndex {
             let step = route.steps[idx]
             if !step.instructions.isEmpty {
+                // No hablar si ya está hablando
+                if speechSynthesizer.isSpeaking { return }
+                speechSynthesizer.stopSpeaking(at: .immediate)
                 let utterance = AVSpeechUtterance(string: step.instructions)
                 utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
                 speechSynthesizer.speak(utterance)
@@ -90,8 +85,20 @@ class MapViewModel: NSObject, ObservableObject {
 extension MapViewModel: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         DispatchQueue.main.async {
-            self.userLocation = locations.last?.coordinate
+            let newLocation = locations.last?.coordinate
+            // Solo recalcular si el usuario se ha movido más de 10 metros
+            if let last = self.userLocation, let newLoc = newLocation {
+                let lastLoc = CLLocation(latitude: last.latitude, longitude: last.longitude)
+                let newLocObj = CLLocation(latitude: newLoc.latitude, longitude: newLoc.longitude)
+                if lastLoc.distance(from: newLocObj) < 10 {
+                    self.userLocation = newLoc
+                    self.announceClosestStepIfNeeded()
+                    return
+                }
+            }
+            self.userLocation = newLocation
             self.announceClosestStepIfNeeded()
+            self.calculateRoute()
         }
     }
 }

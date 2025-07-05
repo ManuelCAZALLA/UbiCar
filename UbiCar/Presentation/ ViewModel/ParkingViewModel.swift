@@ -80,18 +80,6 @@ final class ParkingViewModel: NSObject, ObservableObject {
             }
         }
     }
-    
-    // MARK: - Nueva función para hablar la distancia al coche
-    func speakDistance(to parking: ParkingLocation) {
-        guard let userLoc = userLocation else { return }
-        let userLocation = CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude)
-        let carLocation = CLLocation(latitude: parking.latitude, longitude: parking.longitude)
-        let distance = userLocation.distance(from: carLocation)
-        let texto = "Tu coche está a \(Int(distance)) metros."
-        let utterance = AVSpeechUtterance(string: texto)
-        utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
-        speechSynthesizer.speak(utterance)
-    }
 }
 
 extension ParkingViewModel: CLLocationManagerDelegate {
